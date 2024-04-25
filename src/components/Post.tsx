@@ -1,35 +1,82 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR'
 import styles from './Post.module.css';
 import Comment from './Comment';
 import Avatar from './Avatar';
 
-const Post = () => {
+interface IContent {
+  type: string;
+  content: string;
+}
+export interface IPost {
+  id: number,
+  author: {
+    avatarUrl: string;
+    name: string;
+    role: string;
+  };
+  publishedAt: Date;
+  content: IContent[];
+}
+
+interface IComment {
+  content: string;
+}
+
+export interface IPostItem {
+  post: IPost;
+}
+
+const Post = ({ post }: IPostItem) => {
+  const [comments, setComments] = useState<IComment[]>([]);
+  const [newCommentText, setNewCommentText] = useState<string>('');
+  const publishedDateFormatted = format(post.publishedAt, "dd 'de' LLLL 'ás' HH:mm'h'", { locale: ptBR })
+  
+  const publishedDateRelativeToNow = formatDistanceToNow(post.publishedAt, {
+    locale: ptBR,
+    addSuffix: true,
+  })
+
+  const handleCreateNewComment = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setComments([...comments, { content: newCommentText }])
+    setNewCommentText('');
+  }
+
+  const handleNewCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewCommentText(e.target.value);
+  }
+
+  const deleteComment = (comment: IComment) => {
+    const filteredComment = comments.filter((value) => value !== comment);
+    setComments(filteredComment)
+  }
+
   return (
    <article className={styles.post}>
     <header>
      <div className={styles.author}>
-       <Avatar src="https://avatars.githubusercontent.com/u/69639482?v=4"/>
+       <Avatar src={post.author.avatarUrl}/>
 
        <div className={styles.authorInfo}>
-        <strong>Jose Almeida</strong>
-        <span>Web Developer</span>
+        <strong>{post.author.name}</strong>
+        <span>{post.author.role}</span>
        </div>
      </div>
 
-     <time title="17 de Abril ás 15:21" dateTime="2024-04-17 15:21:30">Publica há 1</time>
+     <time title={publishedDateFormatted} dateTime={post.publishedAt.toISOString()}>{publishedDateRelativeToNow}</time>
 
     </header>
 
     <div className={styles.content}>
-      <p>Fala galeraa 👋</p>
-
-      <p>
-        Acabei de subir mais um projeto no meu portifa. 
-        É um projeto que fiz no NLW Return, evento da Rocketseat. O nome do projeto é DoctorCare 🚀
-      </p>
-
-      <p>👉{' '}<a href="">jane.design/doctorcare</a></p>
-
+      {post.content.map((line) => {
+        if(line.type === 'paragraph'){
+          return <p>{line.content}</p>
+        } else {
+          return <a href="">{line.content}</a>
+        }
+      })}
       <p>
           <a href="">#novoprojeto</a>{' '}
           <a href="">#nlw</a>{' '}
@@ -37,11 +84,14 @@ const Post = () => {
       </p>
     </div>
 
-    <form className={styles.commentForm}>
+    <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
       <strong>Deixei seu feedback</strong>
 
-      <textarea  
+      <textarea
+        name='comment'
+        value={newCommentText}  
         placeholder='Deixei um comentário'
+        onChange={handleNewCommentChange}
       />
 
       <footer>
@@ -50,9 +100,13 @@ const Post = () => {
     </form>
 
     <div className={styles.commentList}>
-      <Comment />
-      <Comment />
-      <Comment />
+      {comments.map((comment, index) => (
+        <Comment
+          key={index} 
+          comment={comment}
+          handleDeleteComment={(comment) => deleteComment(comment)}
+        />
+      ))}
     </div>
    </article>
   );
