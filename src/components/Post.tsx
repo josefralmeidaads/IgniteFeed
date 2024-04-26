@@ -45,6 +45,7 @@ const Post = ({ post }: IPostItem) => {
   }
 
   const handleNewCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    event.target.setCustomValidity('');
     setNewCommentText(e.target.value);
   }
 
@@ -52,6 +53,12 @@ const Post = ({ post }: IPostItem) => {
     const filteredComment = comments.filter((value) => value !== comment);
     setComments(filteredComment)
   }
+
+  const handleNewCommentInvalid = (event: React.FormEvent<HTMLTextAreaElement>) => {
+    event.target.setCustomValidity('Esse campo é obrigatório');
+  }
+
+  const isNewCommentEmpty = newCommentText.length === 0;
 
   return (
    <article className={styles.post}>
@@ -92,10 +99,17 @@ const Post = ({ post }: IPostItem) => {
         value={newCommentText}  
         placeholder='Deixei um comentário'
         onChange={handleNewCommentChange}
+        onInvalid={handleNewCommentInvalid}
+        required
       />
 
       <footer>
-        <button type="submit">Publicar</button>
+        <button 
+          type="submit" 
+          disabled={isNewCommentEmpty}
+        >
+          Publicar
+        </button>
       </footer>
     </form>
 

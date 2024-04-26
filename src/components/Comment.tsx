@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import styles from './Comment.module.css';
 import { ThumbsUp, Trash } from '@phosphor-icons/react';
@@ -14,6 +14,12 @@ interface IComment {
 }
 
 const Comment = ({ comment, handleDeleteComment }: IComment) => {
+  const [like, setLike] = useState<number>(0);
+
+  const handleLike = () => {
+    setLike((prevState) => prevState + 1);
+  }
+
   return (
    <div className={styles.comment}>
     <Avatar hasBorder={false} src='https://avatars.githubusercontent.com/u/69639482?v=4'/>
@@ -35,9 +41,9 @@ const Comment = ({ comment, handleDeleteComment }: IComment) => {
      </div>
 
      <footer>
-      <button>
+      <button onClick={handleLike}>
        <ThumbsUp size={20}/>
-       Aplaudir <span>20</span>
+       Aplaudir <span>{like}</span>
       </button>
      </footer>
     </div>
